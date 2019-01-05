@@ -5,3 +5,4 @@ authors = ["Teja Ambati <teja635@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+ncurses = "5.98.0"
