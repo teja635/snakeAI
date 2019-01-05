@@ -11,8 +11,7 @@ const HEIGHT: usize = 24;
 
 #[derive(Clone, Copy)]
 enum Piece {
-	Wall, 
-	Snake, 
+	Wall, Snake, 
 	Food,
 	Null,
 }
@@ -63,20 +62,39 @@ impl Board {
 	fn clear_screen(&mut self) {
 		for i in 1..(HEIGHT - 1) {
 			for k in 1..(WIDTH - 1) {
-				self.board[i*16 + k] = Piece::Null;
+				self.board[i*64 + k] = Piece::Null;
 			}
 		}
 	}
 
+	fn put_snake_piece(&mut self, x: u8, y: u8) {
+		let x = (x + 1) as usize;
+		let y = (y + 1) as usize;
+		if x > 62 || y > 22 {
+			panic!("Snake went out of bounds");
+		}
+		self.board[y * WIDTH + x] = Piece::Snake;
+	}
+
+	fn put_food(&mut self, food_x: u8, food_y: u8) {
+		let x = (food_x + 1) as usize;
+		let y = (food_y + 1) as usize;
+		self.board[y * WIDTH + x] = Piece::Food;
+	}
+
 	pub fn run(&mut self, mut snake: Snake) {
-		while !snake.game_over {
-			thread::sleep(time::Duration::from_millis(50));
+		for _ in 0..100 {
+			thread::sleep(time::Duration::from_millis(100));
 			
 			clear();
 			snake.mov();
+			self.clear_screen();
 			for piece in snake.get_snake() {
-				self.board[(piece.y as usize) * (HEIGHT - 2) + (piece.x as usize)] = Piece::Snake
+				self.put_snake_piece(piece.x, piece.y);
 			}
+
+			let (food_x, food_y) = snake.get_food();
+			self.put_food(food_x, food_y);
 			self.print_board();
 		}
 	}
