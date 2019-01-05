@@ -5,13 +5,15 @@ use std::{thread, time};
 
 use snake;
 use snake::Snake; 
+use snake::Direction; 
 
 const WIDTH: usize = 64;
 const HEIGHT: usize = 24;
 
 #[derive(Clone, Copy)]
 enum Piece {
-	Wall, Snake, 
+	Wall, 
+	Snake, 
 	Food,
 	Null,
 }
@@ -52,8 +54,9 @@ impl Board {
 	pub fn initialize_screen(&mut self) {
 		initscr();
 		raw();
+		halfdelay(1);
 
-		nodelay(stdscr(), true);
+		keypad(stdscr(), true);
 		noecho();
 
 		self.print_board();
@@ -84,7 +87,7 @@ impl Board {
 
 	pub fn run(&mut self, mut snake: Snake) {
 		for _ in 0..100 {
-			thread::sleep(time::Duration::from_millis(100));
+			let ch = getch();
 			
 			clear();
 			snake.mov();
@@ -96,6 +99,13 @@ impl Board {
 			let (food_x, food_y) = snake.get_food();
 			self.put_food(food_x, food_y);
 			self.print_board();
+			match ch {
+				KEY_LEFT => snake.change_direction(Direction::Left),
+				KEY_RIGHT => snake.change_direction(Direction::Right) ,
+				KEY_UP => snake.change_direction(Direction::Up) ,
+				KEY_DOWN => snake.change_direction(Direction::Down) ,
+				_ => {},
+			};
 		}
 	}
 }

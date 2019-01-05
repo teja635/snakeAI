@@ -1,6 +1,6 @@
 use std::error::Error;
 
-enum Direction {
+pub enum Direction {
 	Up, 
 	Down, 
 	Left, 
@@ -34,7 +34,7 @@ impl Snake {
 										 SnakeBody {x: start_x + 3, y: start_y}]; 
 
 		Ok(Snake {snake: snake, 
-							food: (0, 0), 
+							food: (20, 20), 
 							game_over: false, 
 							width: width, 
 							height: height, 
@@ -42,17 +42,30 @@ impl Snake {
 	}
 
 	pub fn mov(&mut self) {
-		self.snake.rotate_left(1);
-		let e = self.snake.pop().unwrap();
 		let x = self.snake[self.snake.len() - 1].x;
 		let y = self.snake[self.snake.len() - 1].y;
 
-		match self.direction {
-			Direction::Up => self.snake.push(SnakeBody {x: x, y: y - 1}),
-			Direction::Down => self.snake.push(SnakeBody {x: x, y: y + 1}),
-			Direction::Left => self.snake.push(SnakeBody {x: x - 1, y: y}),
-			Direction::Right => self.snake.push(SnakeBody {x: x + 1, y: y}),
+		let new_piece = match self.direction {
+			Direction::Up => SnakeBody {x: x, y: y - 1},
+			Direction::Down => SnakeBody {x: x, y: y + 1},
+			Direction::Left => SnakeBody {x: x - 1, y: y},
+			Direction::Right => SnakeBody {x: x + 1, y: y},
+		};
+
+		let (food_x, food_y) = self.food; 
+
+		if new_piece.x != food_x || new_piece.y != food_y {
+			self.snake.rotate_left(1);
+			let e = self.snake.pop().unwrap();
 		}
+		else {
+			self.new_food();
+		}
+		self.snake.push(new_piece);
+	}
+
+	fn new_food(&mut self) {
+		self.food = (10, 10);
 	}
 
 	pub fn get_snake(&mut self) -> &mut Vec<SnakeBody> {
@@ -61,5 +74,9 @@ impl Snake {
 	
 	pub fn get_food(&mut self) -> (u8, u8) {
 		self.food
+	}
+
+	pub fn change_direction(&mut self, dir: Direction) {
+		self.direction = dir;
 	}
 }
