@@ -7,15 +7,16 @@ enum Direction {
 	Right,
 }
 
-struct SnakeBody {
-	x: u8,
-	y: u8,
+#[derive(Debug)]
+pub struct SnakeBody {
+	pub x: u8,
+	pub y: u8,
 }
 
 pub struct Snake {
-	snake: Vec<SnakeBody>,
+	pub snake: Vec<SnakeBody>,
 	food: (u8, u8),
-	game_over: bool,
+	pub game_over: bool,
 	width: u8,
 	height: u8,
 	direction: Direction,
@@ -35,5 +36,20 @@ impl Snake {
 							width: width, 
 							height: height, 
 							direction: Direction::Down})
+	}
+
+	pub fn mov(&mut self) {
+		let e = self.snake.pop().unwrap();
+		println!("{:?}", e);
+		match self.direction {
+			Direction::Up => self.snake.push(SnakeBody {x: e.x - 1, y: e.y}),
+			Direction::Down => self.snake.push(SnakeBody {x: e.x + 1, y: e.y}),
+			Direction::Left => self.snake.push(SnakeBody {x: e.x, y: e.y - 1}),
+			Direction::Right => self.snake.push(SnakeBody {x: e.x, y: e.y + 1}),
+		}
+	}
+
+	pub fn get_snake(&mut self) -> &mut Vec<SnakeBody> {
+		&mut self.snake
 	}
 }

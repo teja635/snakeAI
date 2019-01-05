@@ -5,7 +5,7 @@ use snake;
 use snake::Snake;
 
 fn main() {
-	let game: Snake = Snake::new(5, 5, 10, 10).unwrap_or_else(|err| {
+	let game: Snake = Snake::new(5, 5, 62, 22).unwrap_or_else(|err| {
 		println!("Problem generating game: {}", err);
 		process::exit(1);
 	});
@@ -16,4 +16,5 @@ fn main() {
 	});
 
 	board.initialize_screen();
+	board.run(game);
 }
