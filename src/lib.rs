@@ -44,6 +44,13 @@ impl Snake {
 							direction: Direction::Down})
 	}
 
+	fn collided(&mut self, new_piece: Coordinate) -> bool {
+		match self.snake.iter().position(|&i| i == new_piece) {
+			Some(s) => false,
+			None		=> true,
+		}
+	}
+
 	pub fn mov(&mut self) -> Result<(), &'static str>{
 		let x = self.snake[self.snake.len() - 1].x;
 		let y = self.snake[self.snake.len() - 1].y;
@@ -60,20 +67,23 @@ impl Snake {
 			Direction::Right => {
 				Ok(Coordinate {x: x + 1, y: y})},
 		};
-		
+
 		match new_piece {
 			Ok(new_piece) => {
-				if new_piece.x != self.food.x || new_piece.y != self.food.y {
+				if !self.collided(new_piece) { Err("Snake Collided") }
+				else if new_piece.x != self.food.x || new_piece.y != self.food.y {
 					self.snake.rotate_left(1);
 					self.snake.pop();
+					self.snake.push(new_piece);
+					Ok(())	
 				} else {
 					self.new_food();
+					self.snake.push(new_piece);
+					Ok(())	
 				} 
 
-				self.snake.push(new_piece);
-				Ok(())	
 			},
-			Err(error) => { Err(error) }
+			Err(error) => { Err("Out of bounds") }
 		}
 	}
 
