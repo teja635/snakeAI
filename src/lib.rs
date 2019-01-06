@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use std::iter::FromIterator;
 use rand::{Rng, thread_rng};
 
+#[derive(PartialEq)]
 pub enum Direction {
 	Up, 
 	Down, 
@@ -33,9 +34,7 @@ impl Snake {
 		}
 
 		let snake = vec![Coordinate {x: start_x, y: start_y},
-										 Coordinate {x: start_x + 1, y: start_y},
-										 Coordinate {x: start_x + 2, y: start_y},
-										 Coordinate {x: start_x + 3, y: start_y}]; 
+										 Coordinate {x: start_x + 1, y: start_y}]; 
 
 		Ok(Snake {snake: snake, 
 							food: Coordinate {x: 20, y: 20}, 
@@ -97,6 +96,11 @@ impl Snake {
 	}
 
 	pub fn change_direction(&mut self, dir: Direction) {
-		self.direction = dir;
+		match self.direction {
+			Direction::Up => { if dir != Direction::Down { self.direction = dir }},
+			Direction::Down => {if dir != Direction::Up { self.direction = dir }},
+			Direction::Left => {if dir != Direction::Right { self.direction = dir }},
+			Direction::Right => {if dir != Direction::Left { self.direction = dir }},
+		};
 	}
 }
