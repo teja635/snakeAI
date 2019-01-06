@@ -2,10 +2,12 @@ extern crate ncurses;
 
 use ncurses::*; 
 use std::{thread, time};
+use range_check::Within;
 
 use snake;
 use snake::Snake; 
 use snake::Direction; 
+use snake::Coordinate; 
 
 const WIDTH: usize = 64;
 const HEIGHT: usize = 24;
@@ -21,6 +23,17 @@ enum Piece {
 pub struct Board {
 	board: [Piece; WIDTH*HEIGHT],
 }
+
+fn check_oob(x: usize, y: usize) -> bool {
+	x.is_within(1..WIDTH - 1) && y.is_within(1..HEIGHT - 1)
+}
+
+fn board_coords(loc: Coordinate) -> (usize, usize) {
+		let x = (loc.x + 1) as usize;
+		let y = (loc.y + 1) as usize;
+
+		return (x, y)
+	}
 
 impl Board {
 	pub fn generate_board() -> Result<Board, &'static str> {
@@ -70,34 +83,34 @@ impl Board {
 		}
 	}
 
-	fn put_snake_piece(&mut self, x: u8, y: u8) {
-		let x = (x + 1) as usize;
-		let y = (y + 1) as usize;
-		if x > 62 || y > 22 {
-			panic!("Snake went out of bounds");
+	fn put_snake_piece(&mut self, piece: Coordinate) {
+		let (x, y) = board_coords(piece);
+		if !check_oob(x, y) {
+			printw("=================GAME OVER=====================");
+			endwin();
 		}
 		self.board[y * WIDTH + x] = Piece::Snake;
 	}
 
-	fn put_food(&mut self, food_x: u8, food_y: u8) {
-		let x = (food_x + 1) as usize;
-		let y = (food_y + 1) as usize;
+	fn put_food(&mut self, food: Coordinate) {
+		let x = (food.x + 1) as usize;
+		let y = (food.y + 1) as usize;
 		self.board[y * WIDTH + x] = Piece::Food;
 	}
 
 	pub fn run(&mut self, mut snake: Snake) {
-		for _ in 0..100 {
+		while true {
 			let ch = getch();
 			
 			clear();
 			snake.mov();
 			self.clear_screen();
 			for piece in snake.get_snake() {
-				self.put_snake_piece(piece.x, piece.y);
+				self.put_snake_piece(*piece);
 			}
 
-			let (food_x, food_y) = snake.get_food();
-			self.put_food(food_x, food_y);
+			let food = snake.get_food();
+			self.put_food(food);
 			self.print_board();
 			match ch {
 				KEY_LEFT => snake.change_direction(Direction::Left),
@@ -107,5 +120,6 @@ impl Board {
 				_ => {},
 			};
 		}
+		endwin();
 	}
 }
