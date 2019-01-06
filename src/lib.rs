@@ -1,6 +1,5 @@
 extern crate rand; 
 
-use std::error::Error;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 use rand::{Rng, thread_rng};
@@ -46,24 +45,37 @@ impl Snake {
 							direction: Direction::Down})
 	}
 
-	pub fn mov(&mut self) {
+	pub fn mov(&mut self) -> Result<(), &'static str>{
 		let x = self.snake[self.snake.len() - 1].x;
 		let y = self.snake[self.snake.len() - 1].y;
 
-		let new_piece = match self.direction {
-			Direction::Up => Coordinate {x: x, y: y - 1},
-			Direction::Down => Coordinate {x: x, y: y + 1},
-			Direction::Left => Coordinate {x: x - 1, y: y},
-			Direction::Right => Coordinate {x: x + 1, y: y},
+		let new_piece: Result<Coordinate, &'static str> = match self.direction {
+			Direction::Up => {
+				if y == 0 { return Err("Out of bounds") }
+				Ok(Coordinate {x: x, y: y - 1}) },
+			Direction::Down => {
+				Ok(Coordinate {x: x, y: y + 1}) },
+			Direction::Left => {
+				if x == 0 { return Err("Out of bounds") }
+				Ok(Coordinate {x: x - 1, y: y}) },
+			Direction::Right => {
+				Ok(Coordinate {x: x + 1, y: y})},
 		};
+		
+		match new_piece {
+			Ok(new_piece) => {
+				if new_piece.x != self.food.x || new_piece.y != self.food.y {
+					self.snake.rotate_left(1);
+					self.snake.pop();
+				} else {
+					self.new_food();
+				} 
 
-		if new_piece.x != self.food.x || new_piece.y != self.food.y {
-			self.snake.rotate_left(1);
-			let e = self.snake.pop().unwrap();
+				self.snake.push(new_piece);
+				Ok(())	
+			},
+			Err(error) => { Err(error) }
 		}
-		else {
-			self.new_food();
-		} self.snake.push(new_piece);
 	}
 
 	fn new_food(&mut self) {

@@ -1,8 +1,8 @@
 extern crate ncurses;
 
 use ncurses::*; 
-use std::{thread, time};
 use range_check::Within;
+use std::process;
 
 use snake;
 use snake::Snake; 
@@ -29,11 +29,11 @@ fn check_oob(x: usize, y: usize) -> bool {
 }
 
 fn board_coords(loc: Coordinate) -> (usize, usize) {
-		let x = (loc.x + 1) as usize;
-		let y = (loc.y + 1) as usize;
+	let x = (loc.x + 1) as usize;
+	let y = (loc.y + 1) as usize;
 
-		return (x, y)
-	}
+	return (x, y)
+}
 
 impl Board {
 	pub fn generate_board() -> Result<Board, &'static str> {
@@ -44,9 +44,15 @@ impl Board {
 		}
 		for i in 0..HEIGHT {
 			board[WIDTH * i] = Piece::Wall;
-			if (i > 0) { board[(WIDTH * i) - 1] = Piece::Wall; }
+			if i > 0 { board[(WIDTH * i) - 1] = Piece::Wall; }
 		}
 		Ok(Board {board: board})
+	}
+
+	fn game_over(&mut self) {
+		printw("=================GAME OVER=====================");
+		endwin();
+		process::exit(1);
 	}
 
 	fn print_board(&mut self) {
@@ -85,10 +91,7 @@ impl Board {
 
 	fn put_snake_piece(&mut self, piece: Coordinate) {
 		let (x, y) = board_coords(piece);
-		if !check_oob(x, y) {
-			printw("=================GAME OVER=====================");
-			endwin();
-		}
+		if !check_oob(x, y) { self.game_over(); }
 		self.board[y * WIDTH + x] = Piece::Snake;
 	}
 
@@ -99,11 +102,14 @@ impl Board {
 	}
 
 	pub fn run(&mut self, mut snake: Snake) {
-		while true {
+		loop {
 			let ch = getch();
 			
 			clear();
-			snake.mov();
+			match snake.mov() {
+				Ok(()) => {}, 
+				Err(_error) => { self.game_over(); }
+			}
 			self.clear_screen();
 			for piece in snake.get_snake() {
 				self.put_snake_piece(*piece);
@@ -120,6 +126,5 @@ impl Board {
 				_ => {},
 			};
 		}
-		endwin();
 	}
 }
